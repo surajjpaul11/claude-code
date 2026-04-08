@@ -6,6 +6,8 @@ services:
     container_name: claude-code
     stdin_open: true    # Keep STDIN open for interactive mode
     tty: true           # Allocate a pseudo-TTY
+    env_file:
+      - .env
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - GITHUB_TOKEN=${GITHUB_TOKEN}
@@ -16,11 +18,10 @@ services:
     volumes:
       # Persist Claude Code auth/config between restarts
       - claude-config:/home/claude/.claude
-      # Workspace for cloned projects
-      - workspace:/home/claude/workspace
+      # Workspace for cloned projects (bind mount for direct host access)
+      - ./workspace:/home/claude/workspace
       # Mount host SSH keys for git operations (read-only)
       - ${HOME}/.ssh:/home/claude/.ssh:ro
 
 volumes:
   claude-config:
-  workspace:

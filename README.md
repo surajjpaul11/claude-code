@@ -64,17 +64,41 @@ docker compose up -d
 docker attach claude-code
 ```
 
+This starts the container in detached mode, then attaches your terminal to the running Claude Code session.
+
 To detach without stopping the container: **Ctrl+P, Ctrl+Q**
 
-**Option C — Attach a shell to a running container:**
+> **Note:** Running `docker compose run claude` **without** `-it` will print the Claude Code banner and then exit — you won't get an interactive session. Always include the `-it` flags.
+
+### Attaching to a Running Container
+
+If the container is already running (e.g., started with `docker compose up -d`), you can connect to it in two ways:
+
+**Attach to the Claude Code session:**
+
+```bash
+docker attach claude-code
+```
+
+This reconnects your terminal to the existing Claude Code process. Use **Ctrl+P, Ctrl+Q** to detach without stopping it.
+
+> **Warning:** If you press **Ctrl+C** while attached, it will stop the Claude Code process and the container.
+
+**Open a bash shell alongside Claude Code:**
 
 ```bash
 docker exec -it claude-code bash
 ```
 
-> **Note:** Running `docker compose run claude` **without** `-it` will print the Claude Code banner and then exit — you won't get an interactive session. Always include the `-it` flags.
+This opens a separate bash session inside the running container without interrupting the Claude Code process. Useful for:
+- Browsing the filesystem or inspecting files
+- Running git commands (`git status`, `git push`, etc.)
+- Installing additional tools
+- Debugging issues
 
-To stop and remove the container:
+You can open multiple shells simultaneously — each `docker exec` creates an independent session.
+
+### Stopping the Container
 
 ```bash
 docker compose down
