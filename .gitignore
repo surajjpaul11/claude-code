@@ -1,0 +1,13 @@
+# Environment / secrets — never commit these
+.env
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+*.swp
+*.swo
+
+# Node
+node_modules/
