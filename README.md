@@ -118,19 +118,32 @@ The container runs as a non-root `claude` user with a workspace at `/home/claude
 
 ## Persistence
 
-Two named Docker volumes keep your data across container restarts:
-
-| Volume | Mounted at | Purpose |
-|---|---|---|
-| `claude-config` | `/home/claude/.claude` | Claude Code auth and configuration |
-| `workspace` | `/home/claude/workspace` | Cloned repos and working files |
+| Mount | Host Path | Container Path | Purpose |
+|---|---|---|---|
+| Bind mount | `./workspace/` | `/home/claude/workspace` | Cloned repos and working files — accessible directly on your host |
+| Named volume | (managed by Docker) | `/home/claude/.claude` | Claude Code auth and configuration |
 
 Your host SSH keys are mounted read-only at `/home/claude/.ssh` for git operations over SSH.
+
+### Workspace Layout
+
+The `./workspace/` directory on your host maps directly to `/home/claude/workspace` inside the container. When cloning repos, always let git create a subdirectory — do **not** clone into `.` :
+
+```bash
+# Correct — creates ./workspace/my-repo/
+git clone https://github.com/owner/my-repo.git
+
+# Wrong — dumps all files directly into ./workspace/, mixing multiple projects
+git clone https://github.com/owner/my-repo.git .
+```
+
+This keeps each project isolated under `./workspace/<repo-name>/` and persists across container restarts since the files live on your host filesystem.
 
 To reset everything and start fresh:
 
 ```bash
 docker compose down -v
+rm -rf ./workspace/*
 ```
 
 ## Configuration

@@ -12,4 +12,13 @@ if [ ! -f /home/claude/.claude.json ]; then
   echo '{}' > /home/claude/.claude.json
 fi
 
+# Remind users to clone into subdirectories to keep workspace organized
+echo "================================================"
+echo "  Workspace: /home/claude/workspace"
+echo "  Clone repos into subdirectories, e.g.:"
+echo "    git clone <url>  (creates /home/claude/workspace/<repo-name>/)"
+echo "  Do NOT use: git clone <url> ."
+echo "================================================"
+echo ""
+
 exec claude --dangerously-skip-permissions "$@"
