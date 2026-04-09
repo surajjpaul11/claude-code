@@ -1,23 +1,30 @@
-# Workspace — Repo Clone Instructions
+# Workspace — Project Management
 
-This directory (`/home/claude/workspace` inside the container, `./workspace/` on the host) is a shared bind mount. Everything here persists across container restarts and is accessible from both the host and the container.
+This directory contains cloned GitHub repos, each in its own subfolder. Projects are managed via the launch script from the host.
 
-## Cloning a Repo
-
-Always clone from within `/home/claude/workspace` and let git create the subfolder:
+## Launching a project (from the host)
 
 ```bash
-cd /home/claude/workspace
-git clone https://github.com/owner/repo-name.git
+# Clone and launch a new project
+./launch.sh https://github.com/owner/repo-name.git
+
+# Launch an already-cloned project
+./launch.sh repo-name
 ```
 
-This creates `/home/claude/workspace/repo-name/` inside the container and `./workspace/repo-name/` on the host.
+Each project gets its own isolated Docker container and Claude Code config.
 
-**Do NOT clone into the current directory:**
+## Managing containers (from the host)
 
 ```bash
-# Wrong — mixes project files with other repos
-git clone https://github.com/owner/repo-name.git .
+# List running Claude containers
+./list.sh
+
+# Open a bash shell in a running container
+./attach.sh repo-name
+
+# Stop a container
+./stop.sh repo-name
 ```
 
 ## Current Projects
@@ -28,19 +35,13 @@ workspace/
   tradingview-mcp/              <-- TradingView MCP project
 ```
 
-## Working with Repos
+## Working inside a container
+
+Each container only sees its own project at `/home/claude/workspace`. You can work with git as usual:
 
 ```bash
-# List all cloned projects
-ls /home/claude/workspace/
-
-# Enter a project
-cd /home/claude/workspace/tradingview-mcp
-
-# Pull latest changes
+git status
 git pull
-
-# Push changes back
 git push
 ```
 

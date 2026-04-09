@@ -64,41 +64,17 @@ docker compose up -d
 docker attach claude-code
 ```
 
-This starts the container in detached mode, then attaches your terminal to the running Claude Code session.
-
 To detach without stopping the container: **Ctrl+P, Ctrl+Q**
 
-> **Note:** Running `docker compose run claude` **without** `-it` will print the Claude Code banner and then exit — you won't get an interactive session. Always include the `-it` flags.
-
-### Attaching to a Running Container
-
-If the container is already running (e.g., started with `docker compose up -d`), you can connect to it in two ways:
-
-**Attach to the Claude Code session:**
-
-```bash
-docker attach claude-code
-```
-
-This reconnects your terminal to the existing Claude Code process. Use **Ctrl+P, Ctrl+Q** to detach without stopping it.
-
-> **Warning:** If you press **Ctrl+C** while attached, it will stop the Claude Code process and the container.
-
-**Open a bash shell alongside Claude Code:**
+**Option C — Attach a shell to a running container:**
 
 ```bash
 docker exec -it claude-code bash
 ```
 
-This opens a separate bash session inside the running container without interrupting the Claude Code process. Useful for:
-- Browsing the filesystem or inspecting files
-- Running git commands (`git status`, `git push`, etc.)
-- Installing additional tools
-- Debugging issues
+> **Note:** Running `docker compose run claude` **without** `-it` will print the Claude Code banner and then exit — you won't get an interactive session. Always include the `-it` flags.
 
-You can open multiple shells simultaneously — each `docker exec` creates an independent session.
-
-### Stopping the Container
+To stop and remove the container:
 
 ```bash
 docker compose down
@@ -118,32 +94,19 @@ The container runs as a non-root `claude` user with a workspace at `/home/claude
 
 ## Persistence
 
-| Mount | Host Path | Container Path | Purpose |
-|---|---|---|---|
-| Bind mount | `./workspace/` | `/home/claude/workspace` | Cloned repos and working files — accessible directly on your host |
-| Named volume | (managed by Docker) | `/home/claude/.claude` | Claude Code auth and configuration |
+Two named Docker volumes keep your data across container restarts:
+
+| Volume | Mounted at | Purpose |
+|---|---|---|
+| `claude-config` | `/home/claude/.claude` | Claude Code auth and configuration |
+| `workspace` | `/home/claude/workspace` | Cloned repos and working files |
 
 Your host SSH keys are mounted read-only at `/home/claude/.ssh` for git operations over SSH.
-
-### Workspace Layout
-
-The `./workspace/` directory on your host maps directly to `/home/claude/workspace` inside the container. When cloning repos, always let git create a subdirectory — do **not** clone into `.` :
-
-```bash
-# Correct — creates ./workspace/my-repo/
-git clone https://github.com/owner/my-repo.git
-
-# Wrong — dumps all files directly into ./workspace/, mixing multiple projects
-git clone https://github.com/owner/my-repo.git .
-```
-
-This keeps each project isolated under `./workspace/<repo-name>/` and persists across container restarts since the files live on your host filesystem.
 
 To reset everything and start fresh:
 
 ```bash
 docker compose down -v
-rm -rf ./workspace/*
 ```
 
 ## Configuration
@@ -167,6 +130,80 @@ After making changes to the `Dockerfile` or `claude-mcp-config.json`, rebuild th
 ```bash
 docker compose build --no-cache
 ```
+
+## Multi-Project Usage
+
+Run multiple Claude Code instances in parallel, each working on a different GitHub repo with fully isolated workspaces and config.
+
+### Pick a project from your GitHub repos (interactive menu)
+
+```bash
+./launch_project_from_repo.sh
+```
+
+Fetches your GitHub repositories, displays a numbered list, and lets you pick one to clone and launch. No typing repo URLs.
+
+### Create a brand new project
+
+```bash
+./launch_new_project.sh my-new-project
+```
+
+Creates a new repository on your GitHub account (public or private), clones it, and launches a Claude Code container for it. You can also run it without arguments for an interactive prompt.
+
+### Launch by URL or folder name
+
+```bash
+# Clone and launch from a URL
+./launch.sh https://github.com/owner/my-project.git
+
+# Launch an already-cloned project
+./launch.sh my-project
+```
+
+Clones the repo into `./workspace/my-project/`, creates an isolated config volume (`claude-config-my-project`), and starts an interactive Claude Code session.
+
+### Manage running containers
+
+```bash
+# List all running Claude containers
+./list.sh
+
+# Open a bash shell in a running container
+./attach.sh my-project
+
+# Stop a container
+./stop.sh my-project
+```
+
+### How isolation works
+
+Each container gets:
+
+| Resource | Scope | Details |
+|----------|-------|---------|
+| Workspace | Per-project | Only the project's folder is mounted at `/home/claude/workspace` |
+| Claude Code config | Per-project | Named volume `claude-config-<project>` stores sessions, settings, cron jobs |
+| GITHUB_TOKEN | Shared | Loaded from root `.env` |
+| Git identity | Shared | Loaded from root `.env` |
+| SSH keys | Shared | Host `~/.ssh` mounted read-only |
+
+### Running multiple projects simultaneously
+
+Open separate terminal windows and launch each project:
+
+```bash
+# Terminal 1
+./launch.sh tradingview-mcp
+
+# Terminal 2
+./launch.sh another-project
+
+# Terminal 3 — check what's running
+./list.sh
+```
+
+Each container runs independently with no conflicts.
 
 ## Troubleshooting
 

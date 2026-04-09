@@ -11,3 +11,7 @@
 
 # Node
 node_modules/
+
+# Cloned projects in workspace (each has its own git repo)
+workspace/*/
+!workspace/repo_clone_instructions.md
