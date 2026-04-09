@@ -63,6 +63,9 @@ if [ ! -f "$ENV_FILE" ]; then
   exit 1
 fi
 
+# Copy .env into the project directory so it's available inside the container
+cp "$ENV_FILE" "$PROJECT_DIR/.env"
+
 echo "Launching Claude Code for project: $REPO_NAME"
 echo "  Container:  $CONTAINER_NAME"
 echo "  Workspace:  $PROJECT_DIR"
