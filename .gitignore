@@ -12,6 +12,7 @@
 # Node
 node_modules/
 
-# Cloned projects in workspace (each has its own git repo)
+# Ignore cloned project subdirectories in workspace (each has its own git repo)
 workspace/*/
+# Exception: keep the clone instructions file tracked even though it lives in workspace/
 !workspace/repo_clone_instructions.md
