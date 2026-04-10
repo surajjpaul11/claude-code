@@ -71,5 +71,5 @@ echo ""
 echo "Selected: $REPO_NAME"
 echo ""
 
-# Delegate to launch.sh
-exec "$SCRIPT_DIR/launch.sh" "$CLONE_URL"
+# Delegate to launch_existing.sh
+exec "$SCRIPT_DIR/launch_existing.sh" "$CLONE_URL"

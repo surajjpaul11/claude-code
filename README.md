@@ -143,10 +143,10 @@ Run multiple Claude Code instances in parallel, each working on a different GitH
 
 Fetches your GitHub repositories, displays a numbered list, and lets you pick one to clone and launch. No typing repo URLs.
 
-### Create a brand new project
+### Create a new project
 
 ```bash
-./launch_new_project.sh my-new-project
+./create_new_project.sh my-new-project
 ```
 
 Creates a new repository on your GitHub account (public or private), clones it, and launches a Claude Code container for it. You can also run it without arguments for an interactive prompt.
@@ -155,10 +155,10 @@ Creates a new repository on your GitHub account (public or private), clones it, 
 
 ```bash
 # Clone and launch from a URL
-./launch.sh https://github.com/owner/my-project.git
+./launch_existing.sh https://github.com/owner/my-project.git
 
 # Launch an already-cloned project
-./launch.sh my-project
+./launch_existing.sh my-project
 ```
 
 Clones the repo into `./workspace/my-project/`, creates an isolated config volume (`claude-config-my-project`), and starts an interactive Claude Code session.
@@ -194,10 +194,10 @@ Open separate terminal windows and launch each project:
 
 ```bash
 # Terminal 1
-./launch.sh tradingview-mcp
+./launch_existing.sh tradingview-mcp
 
 # Terminal 2
-./launch.sh another-project
+./launch_existing.sh another-project
 
 # Terminal 3 — check what's running
 ./list.sh

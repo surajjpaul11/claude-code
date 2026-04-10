@@ -6,10 +6,10 @@ This directory contains cloned GitHub repos, each in its own subfolder. Projects
 
 ```bash
 # Clone and launch a new project
-./launch.sh https://github.com/owner/repo-name.git
+./launch_existing.sh https://github.com/owner/repo-name.git
 
 # Launch an already-cloned project
-./launch.sh repo-name
+./launch_existing.sh repo-name
 ```
 
 Each project gets its own isolated Docker container and Claude Code config.

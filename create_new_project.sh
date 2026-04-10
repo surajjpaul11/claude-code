@@ -11,8 +11,11 @@ fi
 
 source "$ENV_FILE"
 
-if [ -z "${GITHUB_TOKEN:-}" ]; then
-  echo "Error: GITHUB_TOKEN not set in .env"
+# Use GH_PAT (classic token with repo creation scope) if available, fall back to GITHUB_TOKEN
+API_TOKEN="${GH_PAT:-${GITHUB_TOKEN:-}}"
+
+if [ -z "$API_TOKEN" ]; then
+  echo "Error: Neither GH_PAT nor GITHUB_TOKEN is set in .env"
   exit 1
 fi
 
@@ -36,15 +39,15 @@ fi
 
 # Check if repo already exists on GitHub
 EXISTING=$(curl -s -o /dev/null -w "%{http_code}" \
-  -H "Authorization: token $GITHUB_TOKEN" \
-  "https://api.github.com/repos/$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user | python3 -c "import sys,json; print(json.load(sys.stdin)['login'])")/$REPO_NAME")
+  -H "Authorization: token $API_TOKEN" \
+  "https://api.github.com/repos/$(curl -s -H "Authorization: token $API_TOKEN" https://api.github.com/user | python3 -c "import sys,json; print(json.load(sys.stdin)['login'])")/$REPO_NAME")
 
 if [ "$EXISTING" = "200" ]; then
   echo "Repository '$REPO_NAME' already exists on GitHub."
   read -rp "Launch the existing repo instead? (y/n): " ANSWER
   if [[ "$ANSWER" =~ ^[Yy] ]]; then
-    GITHUB_USER=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user | python3 -c "import sys,json; print(json.load(sys.stdin)['login'])")
-    exec "$SCRIPT_DIR/launch.sh" "https://github.com/$GITHUB_USER/$REPO_NAME.git"
+    GITHUB_USER=$(curl -s -H "Authorization: token $API_TOKEN" https://api.github.com/user | python3 -c "import sys,json; print(json.load(sys.stdin)['login'])")
+    exec "$SCRIPT_DIR/launch_existing.sh" "https://github.com/$GITHUB_USER/$REPO_NAME.git"
   fi
   exit 0
 fi
@@ -66,13 +69,13 @@ echo "  Visibility: $([ "$PRIVATE" = true ] && echo 'private' || echo 'public')"
 echo ""
 
 # Create the repo via GitHub API
-RESPONSE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+RESPONSE=$(curl -s -H "Authorization: token $API_TOKEN" \
   -H "Content-Type: application/json" \
   -d "$(python3 -c "
 import json
 data = {
     'name': '$REPO_NAME',
-    'private': $PRIVATE,
+    'private': '$PRIVATE' == 'true',
     'auto_init': True
 }
 desc = '''$DESCRIPTION'''
@@ -105,4 +108,4 @@ echo "Repository created: $CLONE_URL"
 echo ""
 
 # Launch the new project
-exec "$SCRIPT_DIR/launch.sh" "$CLONE_URL"
+exec "$SCRIPT_DIR/launch_existing.sh" "$CLONE_URL"
