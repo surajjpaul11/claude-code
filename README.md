@@ -184,9 +184,30 @@ Each container gets:
 |----------|-------|---------|
 | Workspace | Per-project | Only the project's folder is mounted at `/home/claude/workspace` |
 | Claude Code config | Per-project | Named volume `claude-config-<project>` stores sessions, settings, cron jobs |
+| Ports | Per-project | 5 ports auto-assigned starting at 8000 (tracked in `port_assignments.txt`) |
 | GITHUB_TOKEN | Shared | Loaded from root `.env` |
 | Git identity | Shared | Loaded from root `.env` |
 | SSH keys | Shared | Host `~/.ssh` mounted read-only |
+
+### Port allocation
+
+Each project is automatically assigned 5 sequential ports (starting at 8000). Assignments are tracked in `port_assignments.txt` and persist across launches.
+
+| Project | Ports |
+|---------|-------|
+| tradingview-mcp | 8000-8004 |
+| iamv2 | 8005-8009 |
+| multilingual_mindmap | 8010-8014 |
+| Heros_of_Might_Deathmatch | 8015-8019 |
+| *(next project)* | 8020-8024 |
+
+A `mandatory_instructions.md` file is copied into each project with the assigned port range and the requirement to bind servers to `0.0.0.0` (not `127.0.0.1`).
+
+You can also pass additional port mappings manually:
+
+```bash
+./launch_existing.sh my-project -p 9090:9090
+```
 
 ### Running multiple projects simultaneously
 

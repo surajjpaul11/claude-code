@@ -5,20 +5,34 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WORKSPACE_DIR="$SCRIPT_DIR/workspace"
 ENV_FILE="$SCRIPT_DIR/.env"
 IMAGE_NAME="claude-code-claude:latest"
+PORT_FILE="$SCRIPT_DIR/port_assignments.txt"
+MANDATORY_INSTRUCTIONS="$SCRIPT_DIR/mandatory_instructions.md"
+PORTS_PER_PROJECT=5
+PORT_RANGE_START=8000
 
 usage() {
-  echo "Usage: ./launch.sh <github-repo-url | project-name>"
+  echo "Usage: ./launch_existing.sh <github-repo-url | project-name> [-p HOST:CONTAINER ...]"
   echo ""
   echo "Examples:"
-  echo "  ./launch.sh https://github.com/owner/my-project.git"
-  echo "  ./launch.sh git@github.com:owner/my-project.git"
-  echo "  ./launch.sh my-project   # launch an already-cloned project"
+  echo "  ./launch_existing.sh https://github.com/owner/my-project.git"
+  echo "  ./launch_existing.sh my-project"
+  echo "  ./launch_existing.sh my-project -p 9000:9000    # additional manual port mapping"
   exit 1
 }
 
 [ $# -lt 1 ] && usage
 
 INPUT="$1"
+shift
+
+# Collect any additional -p flags passed by the user
+EXTRA_PORTS=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -p) EXTRA_PORTS+=("-p" "$2"); shift 2 ;;
+    *)  shift ;;
+  esac
+done
 
 # Extract repo name from URL or use as-is
 if [[ "$INPUT" == http* || "$INPUT" == git@* ]]; then
@@ -63,13 +77,62 @@ if [ ! -f "$ENV_FILE" ]; then
   exit 1
 fi
 
+# --- Port assignment ---
+# Ensure port assignments file exists
+if [ ! -f "$PORT_FILE" ]; then
+  echo "# Port assignments for Docker Claude Code projects" > "$PORT_FILE"
+  echo "# Format: project_name|start_port|end_port" >> "$PORT_FILE"
+  echo "# Each project gets $PORTS_PER_PROJECT ports. Range starts at $PORT_RANGE_START." >> "$PORT_FILE"
+  echo "# DO NOT edit manually — managed by launch_existing.sh" >> "$PORT_FILE"
+fi
+
+# Check if this project already has a port assignment
+EXISTING_ASSIGNMENT=$(grep "^${REPO_NAME}|" "$PORT_FILE" 2>/dev/null || true)
+
+if [ -n "$EXISTING_ASSIGNMENT" ]; then
+  START_PORT=$(echo "$EXISTING_ASSIGNMENT" | cut -d'|' -f2)
+  END_PORT=$(echo "$EXISTING_ASSIGNMENT" | cut -d'|' -f3)
+else
+  # Find the next available port range
+  LAST_END_PORT=$(grep -v '^#' "$PORT_FILE" | grep '|' | cut -d'|' -f3 | sort -n | tail -1)
+  if [ -z "$LAST_END_PORT" ]; then
+    START_PORT=$PORT_RANGE_START
+  else
+    START_PORT=$((LAST_END_PORT + 1))
+  fi
+  END_PORT=$((START_PORT + PORTS_PER_PROJECT - 1))
+
+  # Save the assignment
+  echo "${REPO_NAME}|${START_PORT}|${END_PORT}" >> "$PORT_FILE"
+fi
+
+# Build port mapping flags for docker run
+PORT_FLAGS=()
+for ((port=START_PORT; port<=END_PORT; port++)); do
+  PORT_FLAGS+=("-p" "${port}:${port}")
+done
+
+# --- Copy project files ---
 # Copy .env into the project directory so it's available inside the container
 cp "$ENV_FILE" "$PROJECT_DIR/.env"
+
+# Copy and customize mandatory_instructions.md for this project
+if [ -f "$MANDATORY_INSTRUCTIONS" ]; then
+  sed \
+    -e "s/__START_PORT__/$START_PORT/g" \
+    -e "s/__END_PORT__/$END_PORT/g" \
+    -e "s/__PORT_2__/$((START_PORT + 1))/g" \
+    -e "s/__PORT_3__/$((START_PORT + 2))/g" \
+    -e "s/__PORT_4__/$((START_PORT + 3))/g" \
+    -e "s/__PORT_5__/$((START_PORT + 4))/g" \
+    "$MANDATORY_INSTRUCTIONS" > "$PROJECT_DIR/mandatory_instructions.md"
+fi
 
 echo "Launching Claude Code for project: $REPO_NAME"
 echo "  Container:  $CONTAINER_NAME"
 echo "  Workspace:  $PROJECT_DIR"
 echo "  Config vol: $CONFIG_VOLUME"
+echo "  Ports:      $START_PORT-$END_PORT (mapped to host)"
 echo ""
 
 docker run --rm -it \
@@ -77,6 +140,8 @@ docker run --rm -it \
   --env-file "$ENV_FILE" \
   -e "GIT_COMMITTER_NAME=${GIT_AUTHOR_NAME:-Claude User}" \
   -e "GIT_COMMITTER_EMAIL=${GIT_AUTHOR_EMAIL:-claude@example.com}" \
+  "${PORT_FLAGS[@]}" \
+  "${EXTRA_PORTS[@]+"${EXTRA_PORTS[@]}"}" \
   -v "$PROJECT_DIR:/home/claude/workspace" \
   -v "$CONFIG_VOLUME:/home/claude/.claude" \
   -v "$HOME/.ssh:/home/claude/.ssh:ro" \

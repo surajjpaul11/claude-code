@@ -1,0 +1,8 @@
+# Port assignments for Docker Claude Code projects
+# Format: project_name|start_port|end_port
+# Each project gets 5 ports. Range starts at 8000.
+# DO NOT edit manually — managed by launch_existing.sh
+tradingview-mcp|8000|8004
+iamv2|8005|8009
+multilingual_mindmap|8010|8014
+Heros_of_Might_Deathmatch|8015|8019
