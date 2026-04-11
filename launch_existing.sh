@@ -116,6 +116,11 @@ done
 # Copy .env into the project directory so it's available inside the container
 cp "$ENV_FILE" "$PROJECT_DIR/.env"
 
+# Copy container restart instructions into the project
+if [ -f "$SCRIPT_DIR/container_restart_instructions.md" ]; then
+  cp "$SCRIPT_DIR/container_restart_instructions.md" "$PROJECT_DIR/container_restart_instructions.md"
+fi
+
 # Copy and customize mandatory_instructions.md for this project
 if [ -f "$MANDATORY_INSTRUCTIONS" ]; then
   sed \
