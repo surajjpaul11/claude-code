@@ -11,19 +11,48 @@ PORTS_PER_PROJECT=5
 PORT_RANGE_START=8000
 
 usage() {
-  echo "Usage: ./launch_existing.sh <github-repo-url | project-name> [-p HOST:CONTAINER ...]"
+  echo "Usage: ./launch_existing.sh [github-repo-url | project-name] [-p HOST:CONTAINER ...]"
   echo ""
   echo "Examples:"
+  echo "  ./launch_existing.sh                             # interactive project picker"
   echo "  ./launch_existing.sh https://github.com/owner/my-project.git"
   echo "  ./launch_existing.sh my-project"
   echo "  ./launch_existing.sh my-project -p 9000:9000    # additional manual port mapping"
   exit 1
 }
 
-[ $# -lt 1 ] && usage
+# If no arguments, show interactive project picker from workspace folders
+if [ $# -lt 1 ]; then
+  PROJECTS=()
+  while IFS= read -r dir; do
+    PROJECTS+=("$(basename "$dir")")
+  done < <(find "$WORKSPACE_DIR" -mindepth 1 -maxdepth 1 -type d | sort)
 
-INPUT="$1"
-shift
+  if [ ${#PROJECTS[@]} -eq 0 ]; then
+    echo "No projects found in $WORKSPACE_DIR"
+    echo "Use a repo URL to clone one: ./launch_existing.sh <github-repo-url>"
+    exit 1
+  fi
+
+  echo "Available projects:"
+  echo "─────────────────────────────────"
+  for i in "${!PROJECTS[@]}"; do
+    printf "  %d) %s\n" "$((i + 1))" "${PROJECTS[$i]}"
+  done
+  echo "─────────────────────────────────"
+  echo ""
+  read -rp "Select a project (1-${#PROJECTS[@]}): " SELECTION
+
+  if ! [[ "$SELECTION" =~ ^[0-9]+$ ]] || [ "$SELECTION" -lt 1 ] || [ "$SELECTION" -gt ${#PROJECTS[@]} ]; then
+    echo "Invalid selection."
+    exit 1
+  fi
+
+  INPUT="${PROJECTS[$((SELECTION - 1))]}"
+else
+  INPUT="$1"
+  shift
+fi
 
 # Collect any additional -p flags passed by the user
 EXTRA_PORTS=()
