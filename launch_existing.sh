@@ -162,6 +162,29 @@ if [ -f "$MANDATORY_INSTRUCTIONS" ]; then
     "$MANDATORY_INSTRUCTIONS" > "$PROJECT_DIR/mandatory_instructions.md"
 fi
 
+# Append Docker Container Instructions to CLAUDE.md if not already present
+CLAUDE_TEMPLATE="$SCRIPT_DIR/docker_claude_instructions_template.md"
+CLAUDE_MD="$PROJECT_DIR/CLAUDE.md"
+if [ -f "$CLAUDE_TEMPLATE" ]; then
+  # Create CLAUDE.md if it doesn't exist
+  if [ ! -f "$CLAUDE_MD" ]; then
+    echo "# CLAUDE.md" > "$CLAUDE_MD"
+    echo "" >> "$CLAUDE_MD"
+    echo "This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository." >> "$CLAUDE_MD"
+  fi
+  # Append section if not already present
+  if ! grep -q "## Docker Container Instructions" "$CLAUDE_MD"; then
+    sed \
+      -e "s/__START_PORT__/$START_PORT/g" \
+      -e "s/__END_PORT__/$END_PORT/g" \
+      -e "s/__PORT_2__/$((START_PORT + 1))/g" \
+      -e "s/__PORT_3__/$((START_PORT + 2))/g" \
+      -e "s/__PORT_4__/$((START_PORT + 3))/g" \
+      -e "s/__PORT_5__/$((START_PORT + 4))/g" \
+      "$CLAUDE_TEMPLATE" >> "$CLAUDE_MD"
+  fi
+fi
+
 echo "Launching Claude Code for project: $REPO_NAME"
 echo "  Container:  $CONTAINER_NAME"
 echo "  Workspace:  $PROJECT_DIR"
