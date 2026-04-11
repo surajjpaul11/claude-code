@@ -26,7 +26,7 @@ if [ $# -lt 1 ]; then
   PROJECTS=()
   while IFS= read -r dir; do
     PROJECTS+=("$(basename "$dir")")
-  done < <(find "$WORKSPACE_DIR" -mindepth 1 -maxdepth 1 -type d | sort)
+  done < <(find "$WORKSPACE_DIR" -mindepth 1 -maxdepth 1 -type d -not -name '.*' | sort)
 
   if [ ${#PROJECTS[@]} -eq 0 ]; then
     echo "No projects found in $WORKSPACE_DIR"
