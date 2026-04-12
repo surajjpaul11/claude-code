@@ -185,6 +185,9 @@ if [ -f "$CLAUDE_TEMPLATE" ]; then
   fi
 fi
 
+# Set terminal tab/window title to the project name
+echo -ne "\033]0;Claude: $REPO_NAME\007"
+
 echo "Launching Claude Code for project: $REPO_NAME"
 echo "  Container:  $CONTAINER_NAME"
 echo "  Workspace:  $PROJECT_DIR"
