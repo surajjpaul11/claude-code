@@ -8,6 +8,7 @@ if [ ! -f /home/claude/.claude/settings.json ]; then
 fi
 
 # Ensure .claude.json exists so Claude Code skips the first-run wizard
+# (If the host's ~/.claude.json is mounted read-only, this is a no-op)
 if [ ! -f /home/claude/.claude.json ]; then
   echo '{}' > /home/claude/.claude.json
 fi
