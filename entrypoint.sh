@@ -27,4 +27,9 @@ echo ""
 # Disable bracketed paste mode to fix paste issues inside Docker TTY
 printf '\e[?2004l'
 
+# If CLAUDE_COLOR is set, feed /color command to Claude on startup
+if [ -n "${CLAUDE_COLOR:-}" ]; then
+  (sleep 2 && printf '/color %s\n' "$CLAUDE_COLOR") &
+fi
+
 exec claude --dangerously-skip-permissions "$@"

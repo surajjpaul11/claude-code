@@ -191,13 +191,13 @@ if [ -f "$CLAUDE_TEMPLATE" ]; then
   fi
 fi
 
-# Assign color per project (ANSI codes + RGB for iTerm2)
+# Assign color per project (ANSI codes + RGB for iTerm2 + Claude Code /color)
 case "$REPO_NAME" in
-  tradingview-mcp)           COLOR="\033[1;32m"; R=0;   G=200; B=0   ;;  # green
-  Heros_of_Might_Deathmatch) COLOR="\033[1;33m"; R=255; G=200; B=0   ;;  # yellow
-  iamv2)                     COLOR="\033[1;31m"; R=255; G=50;  B=50  ;;  # red
-  multilingual_mindmap)      COLOR="\033[1;36m"; R=0;   G=200; B=200 ;;  # cyan
-  *)                         COLOR="\033[1;34m"; R=150; G=150; B=255 ;;  # blue
+  tradingview-mcp)           COLOR="\033[1;32m"; R=0;   G=200; B=0;   CLAUDE_COLOR="green"  ;;
+  Heros_of_Might_Deathmatch) COLOR="\033[1;33m"; R=255; G=200; B=0;   CLAUDE_COLOR="yellow" ;;
+  iamv2)                     COLOR="\033[1;31m"; R=255; G=50;  B=50;  CLAUDE_COLOR="red"    ;;
+  multilingual_mindmap)      COLOR="\033[1;36m"; R=0;   G=200; B=200; CLAUDE_COLOR="cyan"   ;;
+  *)                         COLOR="\033[1;34m"; R=150; G=150; B=255; CLAUDE_COLOR="blue"   ;;
 esac
 RESET="\033[0m"
 
@@ -224,6 +224,7 @@ docker run -it \
   --env-file "$ENV_FILE" \
   -e "GIT_COMMITTER_NAME=${GIT_AUTHOR_NAME:-Claude User}" \
   -e "GIT_COMMITTER_EMAIL=${GIT_AUTHOR_EMAIL:-claude@example.com}" \
+  -e "CLAUDE_COLOR=$CLAUDE_COLOR" \
   "${PORT_FLAGS[@]}" \
   "${EXTRA_PORTS[@]+"${EXTRA_PORTS[@]}"}" \
   -v "$PROJECT_DIR:/home/claude/workspace" \
