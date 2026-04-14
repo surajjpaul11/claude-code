@@ -21,4 +21,7 @@ echo "  Do NOT use: git clone <url> ."
 echo "================================================"
 echo ""
 
+# Disable bracketed paste mode to fix paste issues inside Docker TTY
+printf '\e[?2004l'
+
 exec claude --dangerously-skip-permissions "$@"

@@ -81,6 +81,12 @@ if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
   exit 1
 fi
 
+# Check if a stopped container with this name exists and remove it
+if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+  echo "Removing stopped container '$CONTAINER_NAME'..."
+  docker rm "$CONTAINER_NAME" >/dev/null
+fi
+
 # Clone the repo if it doesn't exist yet
 if [ ! -d "$PROJECT_DIR" ]; then
   if [[ "$INPUT" == http* || "$INPUT" == git@* ]]; then
@@ -195,7 +201,7 @@ echo "  Config vol: $CONFIG_VOLUME"
 echo "  Ports:      $START_PORT-$END_PORT (mapped to host)"
 echo ""
 
-docker run --rm -it \
+docker run -it \
   --name "$CONTAINER_NAME" \
   --env-file "$ENV_FILE" \
   -e "GIT_COMMITTER_NAME=${GIT_AUTHOR_NAME:-Claude User}" \
