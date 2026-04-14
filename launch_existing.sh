@@ -23,10 +23,32 @@ usage() {
 
 # If no arguments, show interactive project picker from workspace folders
 if [ $# -lt 1 ]; then
-  PROJECTS=()
+  # Preferred project order (listed first if they exist, then any others alphabetically)
+  PREFERRED_ORDER=("tradingview-mcp" "Heros_of_Might_Deathmatch" "iamv2" "multilingual_mindmap")
+
+  ALL_DIRS=()
   while IFS= read -r dir; do
-    PROJECTS+=("$(basename "$dir")")
+    ALL_DIRS+=("$(basename "$dir")")
   done < <(find "$WORKSPACE_DIR" -mindepth 1 -maxdepth 1 -type d -not -name '.*' | sort)
+
+  PROJECTS=()
+  # Add preferred projects first (in order, if they exist)
+  for pref in "${PREFERRED_ORDER[@]}"; do
+    for d in "${ALL_DIRS[@]}"; do
+      if [ "$d" = "$pref" ]; then
+        PROJECTS+=("$d")
+        break
+      fi
+    done
+  done
+  # Add remaining projects not in preferred list
+  for d in "${ALL_DIRS[@]}"; do
+    FOUND=false
+    for pref in "${PREFERRED_ORDER[@]}"; do
+      if [ "$d" = "$pref" ]; then FOUND=true; break; fi
+    done
+    if ! $FOUND; then PROJECTS+=("$d"); fi
+  done
 
   if [ ${#PROJECTS[@]} -eq 0 ]; then
     echo "No projects found in $WORKSPACE_DIR"
