@@ -15,6 +15,19 @@ elif [ ! -f /home/claude/.claude.json ]; then
   echo '{}' > /home/claude/.claude.json
 fi
 
+# Pre-trust the workspace directory so Claude doesn't prompt
+python3 -c "
+import json, os
+f = '/home/claude/.claude.json'
+d = json.load(open(f))
+projects = d.setdefault('projects', {})
+ws = projects.setdefault('/home/claude/workspace', {})
+ws['hasTrustDialogAccepted'] = True
+ws['hasCompletedOnboarding'] = True
+with open(f, 'w') as out:
+    json.dump(d, out, indent=2)
+" 2>/dev/null || true
+
 # Remind users to clone into subdirectories to keep workspace organized
 echo "================================================"
 echo "  Workspace: /home/claude/workspace"
