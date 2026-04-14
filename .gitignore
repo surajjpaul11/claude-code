@@ -11,3 +11,11 @@
 
 # Node
 node_modules/
+
+# Port assignments are auto-managed — track for consistency across clones
+# port_assignments.txt is NOT ignored
+
+# Ignore cloned project subdirectories in workspace (each has its own git repo)
+workspace/*/
+# Exception: keep the clone instructions file tracked even though it lives in workspace/
+!workspace/repo_clone_instructions.md
