@@ -23,7 +23,7 @@ services:
       # Mount host SSH keys for git operations (read-only)
       - ${HOME}/.ssh:/home/claude/.ssh:ro
       # Mount host Claude auth so containers share the login session
-      - ${HOME}/.claude.json:/home/claude/.claude.json:ro
+      - ${HOME}/.claude.json:/home/claude/.claude-host.json:ro
 
 volumes:
   claude-config:

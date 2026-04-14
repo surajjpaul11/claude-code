@@ -211,5 +211,5 @@ docker run -it \
   -v "$PROJECT_DIR:/home/claude/workspace" \
   -v "$CONFIG_VOLUME:/home/claude/.claude" \
   -v "$HOME/.ssh:/home/claude/.ssh:ro" \
-  -v "$HOME/.claude.json:/home/claude/.claude.json:ro" \
+  -v "$HOME/.claude.json:/home/claude/.claude-host.json:ro" \
   "$IMAGE_NAME"

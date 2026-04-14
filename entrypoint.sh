@@ -7,9 +7,11 @@ if [ ! -f /home/claude/.claude/settings.json ]; then
   cp /home/claude/.claude-settings-default.json /home/claude/.claude/settings.json
 fi
 
-# Ensure .claude.json exists so Claude Code skips the first-run wizard
-# (If the host's ~/.claude.json is mounted read-only, this is a no-op)
-if [ ! -f /home/claude/.claude.json ]; then
+# Copy host auth into the container's writable .claude.json
+# The host file is mounted read-only at .claude-host.json to avoid write conflicts
+if [ -f /home/claude/.claude-host.json ]; then
+  cp /home/claude/.claude-host.json /home/claude/.claude.json
+elif [ ! -f /home/claude/.claude.json ]; then
   echo '{}' > /home/claude/.claude.json
 fi
 
