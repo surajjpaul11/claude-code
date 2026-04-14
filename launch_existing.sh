@@ -191,32 +191,39 @@ if [ -f "$CLAUDE_TEMPLATE" ]; then
   fi
 fi
 
-# Set terminal tab/window title and color based on project
-# Color assignments (iTerm2 / macOS Terminal tab colors)
+# Assign color per project (ANSI 256-color codes)
 case "$REPO_NAME" in
-  tradingview-mcp)          TAB_COLOR="0;200;0" ;;      # green
-  Heros_of_Might_Deathmatch) TAB_COLOR="255;200;0" ;;   # yellow
-  iamv2)                    TAB_COLOR="255;50;50" ;;     # red
-  multilingual_mindmap)     TAB_COLOR="0;200;200" ;;     # cyan
-  *)                        TAB_COLOR="150;150;255" ;;   # light blue (default)
+  tradingview-mcp)           COLOR="\033[1;32m" ;;  # bright green
+  Heros_of_Might_Deathmatch) COLOR="\033[1;33m" ;;  # bright yellow
+  iamv2)                     COLOR="\033[1;31m" ;;  # bright red
+  multilingual_mindmap)      COLOR="\033[1;36m" ;;  # bright cyan
+  *)                         COLOR="\033[1;34m" ;;  # bright blue (default)
 esac
+RESET="\033[0m"
 
-IFS=';' read -r R G B <<< "$TAB_COLOR"
-
-# Set tab title
+# Set terminal title (works in most terminals)
 echo -ne "\033]0;Claude: $REPO_NAME\007"
-# Set tab color (iTerm2)
+# iTerm2 tab color
+IFS=';' read -r R G B <<< "$(case "$REPO_NAME" in
+  tradingview-mcp) echo "0;200;0" ;;
+  Heros_of_Might_Deathmatch) echo "255;200;0" ;;
+  iamv2) echo "255;50;50" ;;
+  multilingual_mindmap) echo "0;200;200" ;;
+  *) echo "150;150;255" ;;
+esac)"
 echo -ne "\033]6;1;bg;red;brightness;$R\a"
 echo -ne "\033]6;1;bg;green;brightness;$G\a"
 echo -ne "\033]6;1;bg;blue;brightness;$B\a"
-# Set tab color (macOS Terminal.app)
-echo -ne "\033]Pf${R};${G};${B}\033\\"
 
-echo "Launching Claude Code for project: $REPO_NAME"
-echo "  Container:  $CONTAINER_NAME"
-echo "  Workspace:  $PROJECT_DIR"
-echo "  Config vol: $CONFIG_VOLUME"
-echo "  Ports:      $START_PORT-$END_PORT (mapped to host)"
+echo ""
+echo -e "${COLOR}╔════════════════════════════════════════════════╗${RESET}"
+echo -e "${COLOR}║  Claude Code: ${REPO_NAME}${RESET}"
+echo -e "${COLOR}╠════════════════════════════════════════════════╣${RESET}"
+echo -e "${COLOR}║${RESET}  Container:  $CONTAINER_NAME"
+echo -e "${COLOR}║${RESET}  Workspace:  $PROJECT_DIR"
+echo -e "${COLOR}║${RESET}  Config vol: $CONFIG_VOLUME"
+echo -e "${COLOR}║${RESET}  Ports:      $START_PORT-$END_PORT (mapped to host)"
+echo -e "${COLOR}╚════════════════════════════════════════════════╝${RESET}"
 echo ""
 
 docker run -it \
