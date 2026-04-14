@@ -18,15 +18,20 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
     && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Claude Code globally
-RUN npm install -g @anthropic-ai/claude-code
-
-# Install GitHub MCP server globally
-RUN npm install -g @modelcontextprotocol/server-github
-
 # Set up non-root user for security
 RUN useradd -m -s /bin/bash claude
+
+# Create a user-writable global npm directory so claude can update packages
+RUN mkdir -p /home/claude/.npm-global \
+    && chown -R claude:claude /home/claude/.npm-global
+ENV NPM_CONFIG_PREFIX=/home/claude/.npm-global
+ENV PATH=/home/claude/.npm-global/bin:$PATH
+
 USER claude
+
+# Install Claude Code and MCP server into the user-writable npm prefix
+RUN npm install -g @anthropic-ai/claude-code
+RUN npm install -g @modelcontextprotocol/server-github
 
 # Configure git defaults
 RUN git config --global init.defaultBranch main \
