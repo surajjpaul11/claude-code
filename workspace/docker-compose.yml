@@ -1,0 +1,12 @@
+services:
+  claude:
+    image: ghcr.io/anthropics/claude-code:latest  # update if using a custom image
+    volumes:
+      - ./:/home/claude/workspace          # workspace bind mount (source code, git repos, config backups)
+      - claude_config:/home/claude/.claude # named volume — persists sessions, crons, tasks across restarts
+    env_file:
+      - .env
+
+volumes:
+  claude_config:
+    driver: local
