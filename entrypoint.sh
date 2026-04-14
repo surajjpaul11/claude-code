@@ -40,9 +40,34 @@ echo ""
 # Disable bracketed paste mode to fix paste issues inside Docker TTY
 printf '\e[?2004l'
 
-# If CLAUDE_COLOR is set, feed /color command to Claude on startup
-if [ -n "${CLAUDE_COLOR:-}" ]; then
-  (sleep 2 && printf '/color %s\n' "$CLAUDE_COLOR") &
-fi
+# Feed startup commands to Claude (color + persistent loops)
+LOOPS_FILE="/home/claude/workspace/loops.json"
+(
+  sleep 2
+
+  # Set session color if configured
+  if [ -n "${CLAUDE_COLOR:-}" ]; then
+    printf '/color %s\n' "$CLAUDE_COLOR"
+    sleep 1
+  fi
+
+  # Re-register persistent loops from loops.json
+  if [ -f "$LOOPS_FILE" ]; then
+    echo "[entrypoint] Restoring loops from loops.json..."
+    python3 -c "
+import json, sys
+with open('$LOOPS_FILE') as f:
+    loops = json.load(f)
+for loop in loops:
+    interval = loop.get('interval', '10m')
+    prompt = loop.get('prompt', '')
+    if prompt:
+        print(f'/loop {interval} {prompt}')
+" | while IFS= read -r cmd; do
+      printf '%s\n' "$cmd"
+      sleep 2
+    done
+  fi
+) &
 
 exec claude --dangerously-skip-permissions "$@"

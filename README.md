@@ -151,6 +151,29 @@ To reset everything and start fresh:
 docker compose down -v
 ```
 
+## Persistent Loops
+
+Claude Code loops (`/loop`) are in-process and stop when the container exits. To make them persist across restarts, create a `loops.json` file in your project's workspace folder:
+
+```bash
+# Example: workspace/tradingview-mcp/loops.json
+```
+
+```json
+[
+  {
+    "interval": "10m",
+    "prompt": "check git status and report any uncommitted changes"
+  },
+  {
+    "interval": "1h",
+    "prompt": "run the test suite and summarize results"
+  }
+]
+```
+
+When the container starts, the entrypoint reads `loops.json` and automatically re-registers each loop via `/loop`. A sample file is provided at `loops.example.json`.
+
 ## Port Allocation
 
 Each project is automatically assigned 5 sequential ports (starting at 8000). Assignments are tracked in `port_assignments.txt` and persist across launches.

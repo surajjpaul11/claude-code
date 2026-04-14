@@ -1,0 +1,6 @@
+[
+  {
+    "interval": "10m",
+    "prompt": "check git status and report any uncommitted changes"
+  }
+]
