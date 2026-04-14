@@ -36,7 +36,20 @@ GIT_AUTHOR_NAME=Your Name
 GIT_AUTHOR_EMAIL=you@example.com
 ```
 
-### 3. Build the Docker image
+### 3. Navigate to the project directory
+
+All `docker compose` commands must be run from the directory containing `docker-compose.yml`:
+
+```bash
+cd claude-code
+```
+
+> **Important:** If you skip this step, Docker Compose won't find the `docker-compose.yml` file and the commands below will fail. Alternatively, you can use the `-f` flag from any location:
+> ```bash
+> docker compose -f /path/to/claude-code/docker-compose.yml run -it claude
+> ```
+
+### 4. Build the Docker image
 
 ```bash
 docker compose build
@@ -47,15 +60,15 @@ This installs:
 - GitHub CLI (`gh`)
 - GitHub MCP server (`@modelcontextprotocol/server-github`)
 
-### 4. Run Claude Code
+### 5. Run Claude Code
 
 **Option A — One-shot interactive session (recommended):**
 
 ```bash
-docker compose run --rm -it claude
+docker compose run -it claude
 ```
 
-The `--rm` flag removes the container when you exit. The `-it` flags are required to attach your terminal's stdin and allocate a pseudo-TTY so Claude Code can run interactively.
+The `-it` flags are required to attach your terminal's stdin and allocate a pseudo-TTY so Claude Code can run interactively.
 
 **Option B — Start in background, then attach:**
 
