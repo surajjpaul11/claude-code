@@ -191,8 +191,26 @@ if [ -f "$CLAUDE_TEMPLATE" ]; then
   fi
 fi
 
-# Set terminal tab/window title to the project name
+# Set terminal tab/window title and color based on project
+# Color assignments (iTerm2 / macOS Terminal tab colors)
+case "$REPO_NAME" in
+  tradingview-mcp)          TAB_COLOR="0;200;0" ;;      # green
+  Heros_of_Might_Deathmatch) TAB_COLOR="255;200;0" ;;   # yellow
+  iamv2)                    TAB_COLOR="255;50;50" ;;     # red
+  multilingual_mindmap)     TAB_COLOR="0;200;200" ;;     # cyan
+  *)                        TAB_COLOR="150;150;255" ;;   # light blue (default)
+esac
+
+IFS=';' read -r R G B <<< "$TAB_COLOR"
+
+# Set tab title
 echo -ne "\033]0;Claude: $REPO_NAME\007"
+# Set tab color (iTerm2)
+echo -ne "\033]6;1;bg;red;brightness;$R\a"
+echo -ne "\033]6;1;bg;green;brightness;$G\a"
+echo -ne "\033]6;1;bg;blue;brightness;$B\a"
+# Set tab color (macOS Terminal.app)
+echo -ne "\033]Pf${R};${G};${B}\033\\"
 
 echo "Launching Claude Code for project: $REPO_NAME"
 echo "  Container:  $CONTAINER_NAME"
