@@ -191,26 +191,19 @@ if [ -f "$CLAUDE_TEMPLATE" ]; then
   fi
 fi
 
-# Assign color per project (ANSI 256-color codes)
+# Assign color per project (ANSI codes + RGB for iTerm2)
 case "$REPO_NAME" in
-  tradingview-mcp)           COLOR="\033[1;32m" ;;  # bright green
-  Heros_of_Might_Deathmatch) COLOR="\033[1;33m" ;;  # bright yellow
-  iamv2)                     COLOR="\033[1;31m" ;;  # bright red
-  multilingual_mindmap)      COLOR="\033[1;36m" ;;  # bright cyan
-  *)                         COLOR="\033[1;34m" ;;  # bright blue (default)
+  tradingview-mcp)           COLOR="\033[1;32m"; R=0;   G=200; B=0   ;;  # green
+  Heros_of_Might_Deathmatch) COLOR="\033[1;33m"; R=255; G=200; B=0   ;;  # yellow
+  iamv2)                     COLOR="\033[1;31m"; R=255; G=50;  B=50  ;;  # red
+  multilingual_mindmap)      COLOR="\033[1;36m"; R=0;   G=200; B=200 ;;  # cyan
+  *)                         COLOR="\033[1;34m"; R=150; G=150; B=255 ;;  # blue
 esac
 RESET="\033[0m"
 
 # Set terminal title (works in most terminals)
 echo -ne "\033]0;Claude: $REPO_NAME\007"
 # iTerm2 tab color
-IFS=';' read -r R G B <<< "$(case "$REPO_NAME" in
-  tradingview-mcp) echo "0;200;0" ;;
-  Heros_of_Might_Deathmatch) echo "255;200;0" ;;
-  iamv2) echo "255;50;50" ;;
-  multilingual_mindmap) echo "0;200;200" ;;
-  *) echo "150;150;255" ;;
-esac)"
 echo -ne "\033]6;1;bg;red;brightness;$R\a"
 echo -ne "\033]6;1;bg;green;brightness;$G\a"
 echo -ne "\033]6;1;bg;blue;brightness;$B\a"
