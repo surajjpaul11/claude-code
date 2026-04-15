@@ -22,6 +22,8 @@ services:
       - ./workspace:/home/claude/workspace
       # Mount host SSH keys for git operations (read-only)
       - ${HOME}/.ssh:/home/claude/.ssh:ro
+      # Mount Unity MCP server so containers can talk to Unity Editor on the host
+      - ${HOME}/unity-mcp-server:/home/claude/unity-mcp-server:ro
       # Mount host Claude auth so containers share the login session
       - ${HOME}/.claude.json:/home/claude/.claude-host.json:ro
 
