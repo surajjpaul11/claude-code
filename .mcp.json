@@ -5,7 +5,7 @@
       "args": ["/Users/spaul11/unity-mcp-server/src/index.js"],
       "env": {
         "UNITY_HUB_PATH": "/Applications/Unity Hub.app/Contents/MacOS/Unity Hub",
-        "UNITY_BRIDGE_PORT": "7890"
+        "UNITY_BRIDGE_PORT": "7893"
       }
     }
   }
