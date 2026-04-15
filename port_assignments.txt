@@ -6,3 +6,5 @@ tradingview-mcp|8000|8004
 iamv2|8005|8009
 multilingual_mindmap|8010|8014
 Heros_of_Might_Deathmatch|8015|8019
+rag-example|8020|8024
+trading_bot|8025|8029
