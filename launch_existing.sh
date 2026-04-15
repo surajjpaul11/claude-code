@@ -253,4 +253,5 @@ docker run -it \
   -v "$CONFIG_VOLUME:/home/claude/.claude" \
   -v "$HOME/.ssh:/home/claude/.ssh:ro" \
   -v "$HOME/.claude.json:/home/claude/.claude-host.json:ro" \
+  -v "$HOME/unity-mcp-server:/home/claude/unity-mcp-server:ro" \
   "$IMAGE_NAME"
