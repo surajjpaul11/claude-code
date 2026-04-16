@@ -173,12 +173,21 @@ done
 # Copy .env into the project directory so it's available inside the container
 cp "$ENV_FILE" "$PROJECT_DIR/.env"
 
-# Copy container restart instructions into the project
+# Copy shared skills into the project's .claude/skills/ directory
+# Skills load on-demand, reducing token usage vs always-loaded CLAUDE.md content
+SKILLS_SRC="$SCRIPT_DIR/container-skills"
+SKILLS_DST="$PROJECT_DIR/.claude/skills"
+if [ -d "$SKILLS_SRC" ]; then
+  mkdir -p "$SKILLS_DST"
+  cp -r "$SKILLS_SRC"/* "$SKILLS_DST/"
+fi
+
+# Copy container restart instructions into the project (kept for backward compat)
 if [ -f "$SCRIPT_DIR/container_restart_instructions.md" ]; then
   cp "$SCRIPT_DIR/container_restart_instructions.md" "$PROJECT_DIR/container_restart_instructions.md"
 fi
 
-# Copy and customize mandatory_instructions.md for this project
+# Copy and customize mandatory_instructions.md for this project (kept for backward compat)
 if [ -f "$MANDATORY_INSTRUCTIONS" ]; then
   sed \
     -e "s/__START_PORT__/$START_PORT/g" \
@@ -191,26 +200,32 @@ if [ -f "$MANDATORY_INSTRUCTIONS" ]; then
 fi
 
 # Append Docker Container Instructions to CLAUDE.md if not already present
-CLAUDE_TEMPLATE="$SCRIPT_DIR/docker_claude_instructions_template.md"
 CLAUDE_MD="$PROJECT_DIR/CLAUDE.md"
-if [ -f "$CLAUDE_TEMPLATE" ]; then
-  # Create CLAUDE.md if it doesn't exist
-  if [ ! -f "$CLAUDE_MD" ]; then
-    echo "# CLAUDE.md" > "$CLAUDE_MD"
-    echo "" >> "$CLAUDE_MD"
-    echo "This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository." >> "$CLAUDE_MD"
+# Create CLAUDE.md if it doesn't exist
+if [ ! -f "$CLAUDE_MD" ]; then
+  echo "# CLAUDE.md" > "$CLAUDE_MD"
+  echo "" >> "$CLAUDE_MD"
+  echo "This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository." >> "$CLAUDE_MD"
+fi
+# Replace old bulky Docker section with slim skills-based version
+if ! grep -q "## Docker Container (Skills)" "$CLAUDE_MD"; then
+  # Remove old Docker Container Instructions section if present
+  if grep -q "## Docker Container Instructions" "$CLAUDE_MD"; then
+    sed -i '' '/^## Docker Container Instructions$/,$d' "$CLAUDE_MD"
   fi
-  # Append section if not already present
-  if ! grep -q "## Docker Container Instructions" "$CLAUDE_MD"; then
-    sed \
-      -e "s/__START_PORT__/$START_PORT/g" \
-      -e "s/__END_PORT__/$END_PORT/g" \
-      -e "s/__PORT_2__/$((START_PORT + 1))/g" \
-      -e "s/__PORT_3__/$((START_PORT + 2))/g" \
-      -e "s/__PORT_4__/$((START_PORT + 3))/g" \
-      -e "s/__PORT_5__/$((START_PORT + 4))/g" \
-      "$CLAUDE_TEMPLATE" >> "$CLAUDE_MD"
-  fi
+  cat >> "$CLAUDE_MD" << DOCKER_EOF
+
+## Docker Container (Skills)
+
+This project runs inside a Docker container. Ports **${START_PORT}–${END_PORT}** are mapped to the host.
+
+Use these skills for details (loaded on-demand to save tokens):
+- \`/docker-networking\` — Server binding rules, port allocation
+- \`/container-restart\` — Pre-restart checklist to preserve work
+- \`/session-resume\` — Startup protocol for restoring state
+
+**Key rules:** Always bind to \`0.0.0.0\`. Only use ports ${START_PORT}–${END_PORT}. Commit and push before restarts.
+DOCKER_EOF
 fi
 
 # Assign color per project (ANSI codes + RGB for iTerm2 + Claude Code /color)
