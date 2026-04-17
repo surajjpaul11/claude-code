@@ -28,7 +28,13 @@ if [ $# -lt 1 ]; then
 
   ALL_DIRS=()
   while IFS= read -r dir; do
-    ALL_DIRS+=("$(basename "$dir")")
+    # Only list directories that are actual projects (contain .git, package.json, or similar)
+    if [ -d "$dir/.git" ] || [ -f "$dir/package.json" ] || [ -f "$dir/Cargo.toml" ] || \
+       [ -f "$dir/go.mod" ] || [ -f "$dir/pyproject.toml" ] || [ -f "$dir/requirements.txt" ] || \
+       [ -f "$dir/pom.xml" ] || [ -f "$dir/Makefile" ] || [ -f "$dir/*.sln" ] || \
+       [ -f "$dir/CLAUDE.md" ]; then
+      ALL_DIRS+=("$(basename "$dir")")
+    fi
   done < <(find "$WORKSPACE_DIR" -mindepth 1 -maxdepth 1 -type d -not -name '.*' | sort)
 
   PROJECTS=()
